@@ -5,18 +5,6 @@
 #         order (boolean) indicating whether order matters
 # Output: (lst) a list of tuples of all possible arrangements of length k
 
-
-def count_arrangements(lst, k, reps, order):
-    from itertools import combinations, combinations_with_replacement, permutations, product
-    if reps and order:
-        return lstist(product(lst, repeat=k))
-    elif reps and not order:
-        return list(combinations_with_replacement(lst, k))
-    elif not reps and order:
-        return list(permutations(lst, k))
-    else:
-        return list(combinations(lst, k))
-
 # `reps_order`
 
 # `reps_no_order`
@@ -33,28 +21,43 @@ def test():
 
     results = {}
     test_cases =\
-            {'no_reps_no_order': [
-                {'args': [seq, 3],
-                 'expected': sorted(list(combinations(seq, 3))),
-                 'key': lambda x: x}
+            {
+                'reps_order': [
+                    {'args': [seq, 3],
+                     'expected': list(product(seq, repeat=3)),
+                     'key': lambda result: sorted(result)
+                     }
                 ],
-             'powerset_iter': [
-                {'args': [[]],
-                 'expected': [[]],
-                 'key': lambda x: sorted(x)},
-                {'args': [[1,2,3]],
-                 'expected': sorted([[], [1], [2], [3], [1, 2], [1, 3], [2, 3], [1, 2, 3]]),
-                 'key': lambda x: sorted(x)}]
+                'reps_no_order': [
+                    {'args': [seq, 3],
+                     'expected': list(combinations_with_replacement(seq, 3)),
+                     'key': lambda result: sorted(
+                         [tuple(sorted(x)) for x in result])}
+                ],
+                'no_reps_no_order': [
+                    {'args': [seq, 3],
+                     'expected': list(combinations(seq, 3)),
+                     'key': lambda result: sorted(
+                         [tuple(sorted(x)) for x in result])}
+                ],
+                'no_reps_order': [
+                    {'args': [seq, 3],
+                     'expected': list(permutations(seq, 3)),
+                     'key': lambda result: sorted(result)}
+                ],
             } 
 
 
     for funcname, cases  in test_cases.items():
-        try:
-            results[funcname] =  "OK" if all([case['key'](eval(funcname)(*case['args'])) == case['expected'] for case in cases]) else "Not OK"
-        except NameError:
+        if funcname not in globals():
             results[funcname] = "Not Implemented"
-        except Exception as e:
-            results[funcname] = "Error -- " + str(e)
+        else:
+            try:
+                results[funcname] =  "OK" if all(
+                    [case['key'](eval(funcname)(*case['args'])) == case['expected']
+                     for case in cases]) else "Not OK"
+            except Exception as e:
+                results[funcname] = "Error -- " + str(e)
 
     print("Function Name            | Status")
     print("-------------------------|--------")
